@@ -2,13 +2,14 @@
 #include <NewPing.h>
 #include <pins.h>
 
-#define keep_out_distance 10  // distance to keep from an object
+#define max_ping_distance 20  // maximum ping distance is 20 cm
+#define keep_out_distance 8  // an obstacle is noticed if the robot comes this close to an obstacle
 
 
 // create ultrasonic objects
-NewPing left_sonar(LEFT_TRIG, LEFT_ECHO, keep_out_distance);
-NewPing front_sonar(FRONT_TRIG, FRONT_ECHO, keep_out_distance);
-NewPing right_sonar(RIGHT_TRIG, RIGHT_ECHO, keep_out_distance);
+NewPing left_sonar(LEFT_TRIG, LEFT_ECHO, max_ping_distance);
+NewPing front_sonar(FRONT_TRIG, FRONT_ECHO, max_ping_distance);
+NewPing right_sonar(RIGHT_TRIG, RIGHT_ECHO, max_ping_distance);
 
 int my_delay = 10;
 
@@ -71,6 +72,17 @@ void stop(){
   digitalWrite(in4, LOW);  
 }
 
+void initialize_motors(){
+  /*
+  Initialize the motors
+  */
+
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+}
+
 void setup() {
   // set up motor driver pins
   pinMode(in1, OUTPUT);
@@ -80,16 +92,22 @@ void setup() {
   pinMode(ena, OUTPUT);
   pinMode(enb, OUTPUT);
 
-  pinMode(LEFT_TRIG, OUTPUT);
-  pinMode(FRONT_TRIG, OUTPUT);
-  pinMode(RIGHT_TRIG, OUTPUT);
-  pinMode(LEFT_ECHO, INPUT);
-  pinMode(FRONT_ECHO, INPUT);
-  pinMode(RIGHT_ECHO, INPUT);
+  // init motors
+  initialize_motors();
+  delayMicroseconds(2000);
+
+  Serial.begin(9600);
 
 }
 
 void loop() {
+
+  // debug
+  Serial.print("Left: "); Serial.print(left_sonar.ping_cm()); Serial.print("\t");
+  Serial.print("Front: "); Serial.print(front_sonar.ping_cm()); Serial.print("\t");
+  Serial.print("Right: "); Serial.print(right_sonar.ping_cm()); Serial.print("\t");
+  Serial.println();
+  
   if(front_sonar.ping_cm() > keep_out_distance){ // no obstacle infront, keep moving forward
     forward(speed, speed);
   }
