@@ -118,8 +118,4 @@ void loop() {
     // obstacles all sides, stop
     stop();
   }
-
-
-
-
 }
