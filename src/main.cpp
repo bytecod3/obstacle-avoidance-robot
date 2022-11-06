@@ -2,20 +2,19 @@
 #include <NewPing.h>
 #include <pins.h>
 
-#define max_ping_distance 20  // maximum ping distance is 20 cm
-#define keep_out_distance 8  // an obstacle is noticed if the robot comes this close to an obstacle
+#define max_ping_distance 100  // maximum ping distance is 20 cm
+#define keep_out_distance 9 // an obstacle is noticed if the robot comes this close to an obstacle
 
 // create ultrasonic objects
 NewPing left_sonar(LEFT_TRIG, LEFT_ECHO, max_ping_distance);
 NewPing front_sonar(FRONT_TRIG, FRONT_ECHO, max_ping_distance);
 NewPing right_sonar(RIGHT_TRIG, RIGHT_ECHO, max_ping_distance);
 
-int my_delay = 10;
+int my_delay = 50;
 
 // speed constants
-int speed = 100;
-int right_spd = 70;
-int turn_speed = 50;
+int speed = 80;
+int turn_speed = 90;
 
 // motor movement function prototypes
 void forward(int, int);
@@ -63,6 +62,18 @@ void right(int r_speed, int l_speed){
   analogWrite(enb, turn_speed);
 }
 
+void reverse(int r_speed, int l_speed){
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);  
+
+  // left motor on 
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+
+  analogWrite(ena, l_speed);
+  analogWrite(enb, r_speed);
+}
+
 void stop(){
   // turn motors OFF
   digitalWrite(in1, LOW);
@@ -92,11 +103,10 @@ void setup() {
   pinMode(enb, OUTPUT);
 
   // init motors
-  initialize_motors();
+  // initialize_motors();
   delayMicroseconds(2000);
 
   Serial.begin(9600);
-
 }
 
 void loop() {
@@ -106,39 +116,44 @@ void loop() {
   Serial.print("Front: "); Serial.print(front_sonar.ping_cm()); Serial.print("\t");
   Serial.print("Right: "); Serial.print(right_sonar.ping_cm()); Serial.print("\t");
   Serial.println();
-  
+
+
   if((front_sonar.ping_cm() > keep_out_distance) && (right_sonar.ping_cm() > keep_out_distance) && (left_sonar.ping_cm() > keep_out_distance)){ // no obstacle infront, keep moving forward
-    // no obstacles to the right or to the left
+    // no obstacles to the right or to the left or to the front
     forward(speed, speed);
   }
 
-  else if ((front_sonar.ping_cm() < keep_out_distance) && (right_sonar.ping_cm() > keep_out_distance) && (left_sonar.ping_cm() > keep_out_distance)){
-    // obstacle infront, no obstacles to the left or right, go left (or right)
+   else if ((front_sonar.ping_cm() < keep_out_distance) && (right_sonar.ping_cm() < keep_out_distance) && (left_sonar.ping_cm() > keep_out_distance)){
+    // obstacle infront and to the right
     left(speed, speed);
   }
 
-  else if((left_sonar.ping_cm() < keep_out_distance) && (right_sonar.ping_cm() > keep_out_distance)){ 
-    // obstacle to the left, no obstacle to the right, go right
+  else if ((front_sonar.ping_cm() < keep_out_distance) && (right_sonar.ping_cm() > keep_out_distance) && (left_sonar.ping_cm() < keep_out_distance)){
+    // obstacle infront and to the left
     right(speed, speed);
   }
 
- else if((right_sonar.ping_cm() < keep_out_distance) && (left_sonar.ping_cm() > keep_out_distance)){
-    // obstacle to the right, no obstacle to the left, go left
+  else if ((front_sonar.ping_cm() < keep_out_distance) && (right_sonar.ping_cm() > keep_out_distance) && (left_sonar.ping_cm() > keep_out_distance)){
+    // obstacles all sides
+    reverse(speed, speed); // clean this
+  } 
+
+  else if ((front_sonar.ping_cm() > keep_out_distance) && (right_sonar.ping_cm() < keep_out_distance) && (left_sonar.ping_cm() < keep_out_distance)){
+    // obstacle to the left and right. no obstacle infront
+    forward(speed, speed);
+  } 
+  
+  else if(right_sonar.ping_cm() < keep_out_distance){
+    // obstacle to the right, turn left
     left(speed, speed);
-  }
-
-  else if((right_sonar.ping_cm() < keep_out_distance) && (left_sonar.ping_cm() < keep_out_distance) && (front_sonar.ping_cm() > keep_out_distance)){
-    // obstacle to the right, obstacle to the left, no obstacle infront, move forward
+  } 
+  
+  else if(left_sonar.ping_cm() < keep_out_distance){
+    // obstacle to the left, turn right
+    right(speed, speed);
+  } else{
     forward(speed, speed);
-  }
+  }  
 
-  else if((right_sonar.ping_cm() < keep_out_distance) && (left_sonar.ping_cm() > keep_out_distance) &&(front_sonar.ping_cm() < keep_out_distance)){
-    // obstacles all sides, stop
-    stop();
-  }
-
-  else{
-    // keep moving forward
-    forward(speed, speed);
-  }
+  delay(my_delay);
 }
