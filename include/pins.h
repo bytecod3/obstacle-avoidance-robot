@@ -10,10 +10,12 @@
 
 // Sonar pins
 #define LEFT_TRIG 30
-#define LEFT_ECHO 38
+#define LEFT_ECHO 48
+
+#define COMMON_TRIG 36
 
 #define FRONT_TRIG 32
-#define FRONT_ECHO 40
+#define FRONT_ECHO 50
 
 #define RIGHT_TRIG 34
 #define RIGHT_ECHO 42

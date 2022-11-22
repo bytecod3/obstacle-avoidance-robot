@@ -33,7 +33,6 @@ void FastPing::waitForAll(){
         if(_left_sensor != -1 && _right_sensor != -1 && _front_sensor != -1)
             break;
     }
-
 }
 
 void FastPing::pingAll(){
