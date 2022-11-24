@@ -40,6 +40,11 @@ uint8_t FastPing::waitForAll(){
     if(_left_sensor > KEEP_OUT_TIME)d_flag |= LEFT;
     if(_right_sensor > KEEP_OUT_TIME)d_flag |= RIGHT;
 
+    Serial.print("Left: "); Serial.print(_left_sensor); Serial.print("\t");
+    Serial.print("Front: "); Serial.print(_front_sensor); Serial.print("\t");
+    Serial.print("Right: "); Serial.print(_right_sensor); Serial.print("\t");
+    Serial.println();
+
     return d_flag;
 }
 

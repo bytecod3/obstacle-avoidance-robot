@@ -23,7 +23,7 @@ FastPing *pinger;
 int my_delay = 50;
 
 // speed constants
-int speed = 80;
+int speed = 100;
 int turn_speed = 90;
 
 // motor movement function prototypes
@@ -152,6 +152,7 @@ void steer(direction_t dir){
 }
 
 void loop() {
+    d_flag = pinger->waitForAll();
 #if DEBUG
     // debug
     Serial.print("Left: "); Serial.print(left_sonar.ping_cm()); Serial.print("\t");
@@ -159,8 +160,6 @@ void loop() {
     Serial.print("Right: "); Serial.print(right_sonar.ping_cm()); Serial.print("\t");
     Serial.println();
 #endif
-
-    d_flag = pinger->waitForAll();
 
     switch (d_flag) {
         case U_TURN:
