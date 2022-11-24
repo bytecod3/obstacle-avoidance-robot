@@ -1,23 +1,8 @@
 #include <Arduino.h>
-#include <NewPing.h>
 #include <pins.h>
 #include "fast_ping.h"
 
-#define DEBUG 0
-
-#define max_ping_distance 100  // maximum ping distance is 20 cm
-#define keep_out_distance 9 // an obstacle is noticed if the robot comes this close to an obstacle
-
-// create ultrasonic objects
-NewPing left_sonar(LEFT_TRIG, LEFT_ECHO, max_ping_distance);
-NewPing front_sonar(FRONT_TRIG, FRONT_ECHO, max_ping_distance);
-NewPing right_sonar(RIGHT_TRIG, RIGHT_ECHO, max_ping_distance);
-
-uint8_t left_distance;
-uint8_t front_distance;
-uint8_t right_distance;
-uint8_t d_flag, greater;
-
+uint8_t d_flag;
 FastPing *pinger;
 
 int my_delay = 50;
@@ -136,58 +121,57 @@ void setup() {
     delayMicroseconds(2000);
 
     Serial.begin(9600);
+    right(speed, speed);
+    delay(my_delay);
+    stop();
 }
 
 void steer(direction_t dir){
     switch (dir) {
         case FRONT:
             forward(speed, speed);
+            Serial.println("FRONT");
+            break;
         case RIGHT:
             right(speed, speed);
+            Serial.println("RIGHT");
+            break;
         case LEFT:
             left(speed, speed);
+            Serial.println("LEFT");
+            break;
         case U_TURN:
             u_turn(speed, speed);
+            Serial.println("U-TURN");
+            break;
     }
 }
 
 void loop() {
     d_flag = pinger->waitForAll();
-#if DEBUG
-    // debug
-    Serial.print("Left: "); Serial.print(left_sonar.ping_cm()); Serial.print("\t");
-    Serial.print("Front: "); Serial.print(front_sonar.ping_cm()); Serial.print("\t");
-    Serial.print("Right: "); Serial.print(right_sonar.ping_cm()); Serial.print("\t");
-    Serial.println();
-#endif
 
     switch (d_flag) {
         case U_TURN:
         case FRONT:
         case RIGHT:
         case LEFT:
+            // steer to that specific side
             steer((direction_t)(d_flag));
             break;
+        case RIGHT | LEFT:
+            // go to side with most space
+            steer((direction_t)pinger->greatest());
+            break;
+        case RIGHT | FRONT:
+        case FRONT | LEFT:
+        case FRONT | LEFT | RIGHT:
+            // prefer front
+            steer((direction_t)FRONT);
+            break;
         default:
+            // go to side with most space
+            // we should not get here
             steer((direction_t)pinger->greatest());
     }
-//    left_distance = left_sonar.ping_cm();
-//    front_distance = front_sonar.ping_cm();
-//    right_distance = right_sonar.ping_cm();
-//
-//    if ((left_distance > keep_out_distance) && (front_distance < keep_out_distance) &&
-//        (right_distance < keep_out_distance)) {
-//        left(speed, speed);
-//    } else if ((front_distance > keep_out_distance) && (left_distance < keep_out_distance) &&
-//               (right_distance < keep_out_distance)) {
-//        forward(speed, speed);
-//    } else if ((right_distance > keep_out_distance) && (left_distance < keep_out_distance) &&
-//               (front_distance < keep_out_distance)) {
-//        right(speed, speed);
-//    } else if ((front_distance < keep_out_distance) && (right_distance > keep_out_distance) &&
-//               (left_distance > keep_out_distance)) {
-//        u_turn(speed, speed); // clean this
-//    }
-
     delay(my_delay);
 }

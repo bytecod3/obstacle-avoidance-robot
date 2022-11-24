@@ -21,9 +21,14 @@ void front_echo_isr(){
 FastPing::FastPing(uint8_t trigger, uint8_t left_echo_pin, uint8_t right_echo_pin, uint8_t front_echo_pin): _trigger(trigger){
     if(_instance == nullptr)
         _instance = this;
-    attachInterrupt(left_echo_pin, left_echo_isr, FALLING);
-    attachInterrupt(right_echo_pin, right_echo_isr, FALLING);
-    attachInterrupt(front_echo_pin, front_echo_isr, FALLING);
+
+    pinMode(left_echo_pin, INPUT);
+    pinMode(right_echo_pin, INPUT);
+    pinMode(front_echo_pin, INPUT);
+    pinMode(trigger, OUTPUT);
+    attachInterrupt(digitalPinToInterrupt(left_echo_pin), left_echo_isr, FALLING);
+    attachInterrupt(digitalPinToInterrupt(right_echo_pin), right_echo_isr, FALLING);
+    attachInterrupt(digitalPinToInterrupt(front_echo_pin), front_echo_isr, FALLING);
 }
 
 
@@ -31,7 +36,7 @@ uint8_t FastPing::waitForAll(){
     pingAll();
     while ((micros() - _start_time) < TIME_OUT)
     {
-        if(_left_sensor != -1 && _right_sensor != -1 && _front_sensor != -1)
+        if(_left_sensor <= TIME_OUT && _right_sensor <= TIME_OUT && _front_sensor <= TIME_OUT)
             break;
     }
 
@@ -39,17 +44,17 @@ uint8_t FastPing::waitForAll(){
     if(_front_sensor > KEEP_OUT_TIME)d_flag |= FRONT;
     if(_left_sensor > KEEP_OUT_TIME)d_flag |= LEFT;
     if(_right_sensor > KEEP_OUT_TIME)d_flag |= RIGHT;
-
+#if DEBUG
     Serial.print("Left: "); Serial.print(_left_sensor); Serial.print("\t");
     Serial.print("Front: "); Serial.print(_front_sensor); Serial.print("\t");
     Serial.print("Right: "); Serial.print(_right_sensor); Serial.print("\t");
     Serial.println();
-
+#endif
     return d_flag;
 }
 
 void FastPing::pingAll(){
-    _left_sensor = _right_sensor = _front_sensor = -1;
+    _left_sensor = _right_sensor = _front_sensor = TIME_OUT + 1;
     digitalWrite(_trigger, 0);
     delayMicroseconds(4);
     digitalWrite(_trigger, 1);
@@ -74,16 +79,16 @@ FastPing* FastPing::getDefaultInstance(){
     return _instance;
 }
 
-uint8_t FastPing::greatest() {
-    if(_front_sensor > _left_sensor){
-        if(_front_sensor > _right_sensor){
-            return FRONT;
+uint8_t FastPing::greatest() const {
+    if(_right_sensor > _left_sensor){
+        if(_right_sensor > _front_sensor){
+            return RIGHT;
         }
-        return RIGHT;
+        return FRONT;
     }else{
-        if(_left_sensor > _right_sensor){
+        if(_left_sensor > _front_sensor){
             return LEFT;
         }
-        return RIGHT;
+        return FRONT;
     }
 }

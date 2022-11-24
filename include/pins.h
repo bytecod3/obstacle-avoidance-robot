@@ -9,13 +9,8 @@
 #define enb 10 // right motor
 
 // Sonar pins
-#define LEFT_TRIG 30
-#define LEFT_ECHO 38
-
-#define FRONT_TRIG 3
-#define FRONT_ECHO 4
-
-#define RIGHT_TRIG 2
-#define RIGHT_ECHO 52
+#define LEFT_ECHO 21
+#define FRONT_ECHO 18
+#define RIGHT_ECHO 19
 
 #define COMMON_TRIG 13
