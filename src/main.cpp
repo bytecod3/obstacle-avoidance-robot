@@ -3,7 +3,7 @@
 #include <pins.h>
 
 #define max_ping_distance 100  // maximum ping distance is 20 cm
-#define keep_out_distance 9 // an obstacle is noticed if the robot comes this close to an obstacle
+#define keep_out_distance 19 // an obstacle is noticed if the robot comes this close to an obstacle
 
 // create ultrasonic objects
 NewPing left_sonar(LEFT_TRIG, LEFT_ECHO, max_ping_distance);
@@ -13,8 +13,8 @@ NewPing right_sonar(RIGHT_TRIG, RIGHT_ECHO, max_ping_distance);
 int my_delay = 50;
 
 // speed constants
-int speed = 80;
-int turn_speed = 90;
+int speed = 120;
+int turn_speed = 80;
 
 // motor movement function prototypes
 void forward(int, int);
@@ -111,48 +111,57 @@ void setup() {
 
 void loop() {
 
+
   // debug
-  Serial.print("Left: "); Serial.print(left_sonar.ping_cm()); Serial.print("\t");
-  Serial.print("Front: "); Serial.print(front_sonar.ping_cm()); Serial.print("\t");
-  Serial.print("Right: "); Serial.print(right_sonar.ping_cm()); Serial.print("\t");
-  Serial.println();
+  // Serial.print("Left: "); Serial.print(left_sonar.ping_cm()); Serial.print("\t");
+  // Serial.print("Front: "); Serial.print(front_sonar.ping_cm()); Serial.print("\t");
+  // Serial.print("Right: "); Serial.print(right_sonar.ping_cm()); Serial.print("\t");
+  // Serial.println();
 
 
   if((front_sonar.ping_cm() > keep_out_distance) && (right_sonar.ping_cm() > keep_out_distance) && (left_sonar.ping_cm() > keep_out_distance)){ // no obstacle infront, keep moving forward
     // no obstacles to the right or to the left or to the front
     forward(speed, speed);
+    // Serial.print("Forward");
   }
 
    else if ((front_sonar.ping_cm() < keep_out_distance) && (right_sonar.ping_cm() < keep_out_distance) && (left_sonar.ping_cm() > keep_out_distance)){
     // obstacle infront and to the right
     left(speed, speed);
+    // Serial.print("left 2");
   }
 
   else if ((front_sonar.ping_cm() < keep_out_distance) && (right_sonar.ping_cm() > keep_out_distance) && (left_sonar.ping_cm() < keep_out_distance)){
     // obstacle infront and to the left
     right(speed, speed);
+    // Serial.print("right");
   }
 
   else if ((front_sonar.ping_cm() < keep_out_distance) && (right_sonar.ping_cm() > keep_out_distance) && (left_sonar.ping_cm() > keep_out_distance)){
     // obstacles all sides
-    reverse(speed, speed); // clean this
+    reverse(speed, speed); 
+    // Serial.print("reverse");
   } 
 
   else if ((front_sonar.ping_cm() > keep_out_distance) && (right_sonar.ping_cm() < keep_out_distance) && (left_sonar.ping_cm() < keep_out_distance)){
     // obstacle to the left and right. no obstacle infront
     forward(speed, speed);
+    // Serial.print("Forward");
   } 
   
   else if(right_sonar.ping_cm() < keep_out_distance){
     // obstacle to the right, turn left
     left(speed, speed);
+    // Serial.print("left");
   } 
   
   else if(left_sonar.ping_cm() < keep_out_distance){
     // obstacle to the left, turn right
     right(speed, speed);
+    // Serial.print("right");
   } else{
     forward(speed, speed);
+    // Serial.print("Forward");
   }  
 
   delay(my_delay);
